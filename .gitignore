@@ -4,3 +4,6 @@
 *.pydevproject
 *.classpath
 
+#directory containing executable files of c program
+build
+
