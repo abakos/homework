@@ -1,0 +1,6 @@
+#commentary
+*.DS_Store
+*.project
+*.pydevproject
+*.classpath
+
