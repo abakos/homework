@@ -1,25 +1,16 @@
 /* 帶二分搜索元素的分頁算法. */
-/* 從零開始實現. */
-/* 使用c語言編寫. */
 
 #include <stdio.h>
-/* 那麼問題來了, c語言中如何使用bool類型變量? 引入"stdbool.h"頭文件, 即可以使用bool類型變量. */
-	/* "#include <stdbool.h>"之後, 定義布爾類型變量的關鍵字為"bool", 真值為"true", 假值為"false". */
 #include <stdbool.h>
 
-/* 那麼問題來了, 分頁算法的基本參數有哪些? */
 	/* 分頁算法的基本參數. 總頁數, pageCount. pageCount由總行數和每頁顯示的行數確定, 即"pageCount = rowCount/displayedRowCount;". */
 	/* 分頁算法的基本參數. 當前頁碼, currentPageNumber. */
 	/* 分頁算法的基本參數. 頁碼欄顯示頁碼的最大個數, displayedPageCount. */
 	/* 綜上所述, 分頁算法一共有四個基本參數, 總行數rowCount, 每頁顯示的行數displayedRowCount, 當前頁碼currentPageNumber, 顯示頁碼的個數displayedPageCount. */
 
 /* 先寫一個方法, 求得pageCount. */
-
-/* 那麼問題來了, c語言中函數的前置聲明是怎樣的? 猜測應該是"#define 函數名(輸入參數);"格式. */
-/* 猜測錯誤, c語言中函數的前置聲明就是函數定義第一行然後末尾加個分號. */
 int getPageCount(int rowCount, int displayedRowCount);
 void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPageNumber, int displayedPageCount);
-/* 廢除. "int max(int a, int b);" */
 
 int getPageCount(int rowCount, int displayedRowCount)
 {
@@ -45,10 +36,6 @@ int getPageCount(int rowCount, int displayedRowCount)
 	return pageCount;
 }
 
-/* 採用模擬蠕蟲身體的可伸縮結構. */
-/* 游碼邊界問題. */
-/* 先打印出首頁. */
-/* 有如下幾個重要節點, pass. */
 	/* 首頁firstPageNumber, 左二分查找頁leftBinarySearchPageNumber, 左鄰起始頁leftNeighborhoodFirstPageNumber. */
 	/* 當前頁currentPageNumber. */
 	/* 右鄰尾頁rightNeighborhoodEndPageNumber, 右二分查找頁rightBinarySearchPageNumber, 尾頁endPageNumber. */
@@ -61,10 +48,7 @@ int getPageCount(int rowCount, int displayedRowCount)
 	/* 右側要優先於左側. */
 
 /* 已知currentPageNumber和neighborhoodLength, currentPageNumber會在neighborhood範圍內左右滑動, 確定leftNeighborhoodFirstPageNumber和rightNeighborhoodEndPageNumber這兩個變量的值. */
-	/* 已知currentPageNumber和neighborhoodLength求neighbor的邊界, 屬於經典的游碼模型問題. */
-	/* 確定游碼邊界問題, 一個經典解法就是藉助左右輔助游標. */ 
-	/* 可以把左右輔助游標看作兩個隧道挖掘機器人, 以游碼位置為起點, 同時向左右出發進行挖掘, 兩個機器人共用同一個電池, 即neighborLength. */
-	/* 當游標機器人挖到障礙物時停止挖掘, 當游標機器人電量耗盡時停止挖掘. 當兩個游標機器人都停止挖掘時, 挖出的隧道兩端的邊界就是游碼邊界. */
+	/* 已知currentPageNumber和neighborhoodLength求neighbor的邊界問題. */
 	/* neighborhoodLength = displayedPageCount-5; */
 	/* 如果"currentPageNumber<=2", 則表示leftBinarySearchPageNumber沒有機會被打印, 節省下來的1個打印名額分配給neighborhoodLength.
 		即"if (2 >= currentPageNumber) neighborhoodLength = neighborhoodLenght+1;"
@@ -78,18 +62,6 @@ int getPageCount(int rowCount, int displayedRowCount)
 	/* 如果"currentPageNumber == endPageNumber", 則表示endPageNumber沒有機會被打印, 節省下來的1個打印名額分配給neighborhoodLength.
 		即"if (currentPageNumber == endPageNumber) neighborhoodLength = neighborhoodLenght+1;"
 	 */
-
-/* 廢除. 創建工具函數max(); */
-int max(int a, int b)
-{
-	if (a > b)
-	{
-		return a;
-	}else
-	{
-		return b;
-	}
-}
 
 void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPageNumber, int displayedPageCount)
 {
@@ -222,5 +194,3 @@ int main(void)
 	
 	return 0;
 }
-
-/* unix系統內, 編譯c語言源代碼文件的命令是"make", 用法是"make c語言源代碼文件名(不加'.c'後綴)". 執行時在命令行直接鍵入"c語言源代碼文件名(不加'.c'後綴)"或"./c語言源代碼文件名(不加'.c'後綴)". */
