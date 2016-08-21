@@ -1,4 +1,4 @@
-/* 帶二分搜索元素的分頁算法. */
+/* 帶二分搜索元素的分頁算法. c語言版本. */
 
 #include <stdio.h>
 #include <stdbool.h>
