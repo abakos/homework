@@ -147,6 +147,12 @@ void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPage
 	int rightBinarySearchPageNumber = (rightNeighborhoodPageCursor+endPageNumber) / 2;
 	
 	/* 打印頁碼. */
+	/* 打印上一頁. */
+	if (currentPageNumber > 1)
+	{
+		printf("previous ");
+	}
+	
 	if (true == firstPageNumberPrintFlag)
 	{
 		printf("%d ", 1);
@@ -154,7 +160,15 @@ void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPage
 	
 	if (true == leftBinarySearchPageNumberPrintFlag)
 	{
+		if (leftBinarySearchPageNumber-1 > 1)
+		{
+			printf("... ");
+		}
 		printf("%d ", leftBinarySearchPageNumber);
+		if (leftNeighborhoodPageCursor-leftBinarySearchPageNumber > 1)
+		{
+			printf("... ");
+		}
 	}
 	
 	int leftNeighborhoodPageNumber = leftNeighborhoodPageCursor;
@@ -175,21 +189,44 @@ void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPage
 	
 	if (true == rightBinarySearchPageNumberPrintFlag)
 	{
+		if (rightBinarySearchPageNumber-rightNeighborhoodPageCursor > 1)
+		{
+			printf("... ");
+		}
 		printf("%d ", rightBinarySearchPageNumber);
+		if (endPageNumber-rightBinarySearchPageNumber > 1)
+		{
+			printf("... ");
+		}
 	}
 	
 	if (true == endPageNumberPrintFlag)
 	{
-		printf("%d\n", endPageNumber);
+		printf("%d ", endPageNumber);
+	}
+	
+	if (currentPageNumber < endPageNumber)
+	{
+		printf("next\n");
 	}
 }
 
 int main(void)
 {
-	int rowCount = 1000;
-	int displayedRowCount = 10;
-	int currentPageNumber = 96;
-	int displayedPageCount = 4;
+	int rowCount = 0;
+	int displayedRowCount = 0;
+	int currentPageNumber = 0;
+	int displayedPageCount = 0;
+	
+	printf("Please input rowCount:");
+	scanf("%d", &rowCount);
+	printf("Please input displayedRowCount:");
+	scanf("%d", &displayedRowCount);
+	printf("Please input currentPageNumber:");
+	scanf("%d", &currentPageNumber);
+	printf("Please input displayedPageCount:");
+	scanf("%d", &displayedPageCount);
+	
 	pagingWithBinarySearch(rowCount, displayedRowCount, currentPageNumber, displayedPageCount);
 	
 	return 0;
