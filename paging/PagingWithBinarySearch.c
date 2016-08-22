@@ -241,10 +241,20 @@ void pagingWithBinarySearch(int rowCount, int displayedRowCount, int currentPage
 
 int main(void)
 {
-	int rowCount = 1000;
-	int displayedRowCount = 10;
-	int currentPageNumber = 96;
-	int displayedPageCount = 4;
+	int rowCount = 0;
+	int displayedRowCount = 0;
+	int currentPageNumber = 0;
+	int displayedPageCount = 0;
+	
+	printf("Please input rowCount:");
+	scanf("%d", &rowCount);
+	printf("Please input displayedRowCount:");
+	scanf("%d", &displayedRowCount);
+	printf("Please input currentPageNumber:");
+	scanf("%d", &currentPageNumber);
+	printf("Please input displayedPageCount:");
+	scanf("%d", &displayedPageCount);
+	
 	pagingWithBinarySearch(rowCount, displayedRowCount, currentPageNumber, displayedPageCount);
 	
 	return 0;
