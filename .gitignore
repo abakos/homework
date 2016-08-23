@@ -1,9 +1,10 @@
 #commentary
+#eclipse
 *.DS_Store
 *.project
 *.pydevproject
 *.classpath
 
 #directory containing executable files of c program
-build
+build/
 
