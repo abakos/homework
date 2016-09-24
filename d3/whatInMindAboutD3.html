@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>What is in your mind about D3?</title>
+<!-- 關於d3, 你腦子裏面都有哪些念頭? -->
+<style>
+/* <svg>標籤下的圖形子標籤的屬性可以通過css來控制. */
+#embeddedinbody
+{
+	background-color: grey;
+	opacity: 0.1;
+}
+</style>
+</head>
+<body>
+<h1>svg embedded in body</h1>
+<svg id="embeddedinbody">
+	<!-- <svg>標籤有默認的"width""height"屬性值, <svg>標籤的"width"默認值為"300px", <svg>標籤的"height"默認值為"150px". -->
+	<!-- d3可以操作<svg>標籤 -->
+	<!-- <svg>標籤的四個基本圖形, 圓形<circle>, 矩形<rect>, 線條<line>, 路徑<path>. -->
+	<!-- <svg>的圖形子標籤, 既可以寫成單標籤的形式, 也可以寫成標籤對的形式. -->
+	<!-- <svg>的圖形子標籤共有的屬性, 邊線顏色"stroke", 邊線寬度"stroke-width", 填充"fill". -->
+	<circle>
+		<!-- <circle>標籤的特有屬性, 在哪裏, 圓心橫縱坐標的屬性"cx""cy", 半徑長度"r". -->
+	</circle>
+	<!-- <svg>圖形子標籤的特有屬性可以分為兩個方面. 一是圖形在哪裏, 二是圖形大小. -->
+	<rect>
+		<!-- <rect>標籤的特有屬性, 確定矩形在哪裏的, 矩形左上角坐標屬性"x""y", 單位為像素. 確定矩形大小的, 寬高屬性"width""height". -->
+	</rect>
+	<line>
+		<!-- 那麼問題來了, 確定<line>標籤 -->
+	</line>
+	<!-- 將數據轉化成圖形的渲染過程, 英文叫"render" -->
+</svg>
+</body>
+</html>
