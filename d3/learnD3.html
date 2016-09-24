@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>D3學習筆記</title>
+<style type="text/css">
+svg
+{
+	width: 400px;
+	height: 400px;
+	background-color: wheat;
+}
+</style>
+<!-- 5. 如何引入d3庫? 把含有"d3.js"這個文件的目錄("d3")拷貝到和網頁源文件的同一目錄下, 給<script>標籤內的"src"屬性賦上相對路徑值'src="d3/d3.js"'. -->
+<script type="text/javascript" src="d3/d3.js"></script>
+<script>
+window.addEventListener('load', function (){
+	var oSvgSelect = d3.select('svg');
+	
+	/* 7. 注意, d3對象的select()方法和document對象的getElement*()方法不完全等同.
+	d3對象的select()方法返回的是"[object Object]", 而document對象的getElement*()方法返回的是"[object *Element]".
+	因此d3對象的select()方法返回的並不是嚴格意義上的DOM節點, 因此比如在使用getComputedStyle()方法獲取節點的樣式屬性時, 使用"[object Object]"作為輸入參數就會報錯.
+	var aSvgGet = document.getElementsByTagName('body');
+	alert(oSvgSelect);
+	alert(aSvgGet[0]);
+	alert(getComputedStyle(aSvgGet[0], null)['height']);
+	alert(getComputedStyle(oSvgSelect, null)['height']);
+	*/
+	
+	var aRectSelect = oSvgSelect.selectAll('rect');
+	/* 8. 如果<svg>標籤中沒有<rect>標籤, 則調用"selectAll('rect')"這個方法返回的並不是null值.
+	"oSvgSelect.selectAll('rect')", 即使oSvgSelect中沒有"rect"節點, "selectAll('rect')"仍然會返回"[object Object]", 即"aRectSelect"這個變量的值並不是null而是"[object Object]".
+	只是"aRectSelect"這個變量內部有一個關於"rect"的選擇集, 這個選擇集是空的.
+	這就是為什麼selectAll()這個方法既可以選中當前已存在的元素節點, 也可以選中現在尚不存在但未來會被添加的元素節點的原理. 因為被選擇的元素節點被存儲在(作為selectAll()方法的返回值)object對象內部的一個選擇集中.
+	alert(aRectSelect);
+	alert(aRectSelect == oSvgSelect); // 返回false.
+	*/
+	
+	/* 10. console.log()方法會把作為參數輸入的對象的內部信息打印到控制臺中.
+	console.log(aRectSelect);
+	*/
+
+	/* 9. 那麼問題來了, 如果我想要在<body>元素內的<ul>元素內附加一個<li>元素, 並在<li>元素內打印文本, 我應該怎麼做? */
+	
+}, null);
+</script>
+</head>
+<body>
+<!-- 2. 如果不給<svg>指定"width""height"屬性, 則<svg>標籤會使用默認寬高, <svg>的默認'width="300px"''height="150px"'. -->
+<!-- 6. <svg>標籤的寬高既可以用"width""height"這兩個html屬性來設置, 也可以在<style>標籤內用css樣式屬性"height"來設置. -->
+<svg>
+<!-- 1. 勘誤, "<svg>形狀標籤都是單標籤."這句話是錯的, <svg>形狀標籤即可寫成單標籤形式也可以寫成標籤對的形式. 只是如果寫成標籤對的形式, 標籤對內如果有文本, 並不會顯示出來. -->
+	<!-- 8. <svg>內畫矩形使用的是<rect/>標籤, 園使用的是<circle/>標籤. -->
+	<circle cx="50px" cy="50px" r="30px" fill="blue"/>
+	<!-- 3. <svg>形狀的內部顏色使用"fill"填充屬性來控制. -->
+	<!-- 4. 那麼問題來了, 形狀的外邊線用什麼屬性控制? "stroke"劃線屬性如何使用? -->
+	<!-- 12. 形狀的外邊線使用"stroke"屬性來控制. "stroke"屬性是與"fill"屬性相對應的, 屬性值為顏色. 外邊線的寬度由"stroke-width"控制.
+	"stroke"屬性具有總閘作用, 也就是說如果只設置了"stroke-width"屬性值而未設置"stroke"屬性值, 則外邊線不會被顯示出來. -->
+	<!-- 11. <circle>的"cx""cy"屬性是"center x""center y"的簡寫, 用來控制園的中心的坐標. "cx""cy"都是html屬性, 無法在<style>標籤中使用. -->
+	<!-- 13. <svg>的形狀設定類似於css的盒子模型. -->
+	<text x="100px" y="100px">Hello World!</text>
+	<!-- 14. <text>標籤用於在<svg>標籤內輸出文本. "x""y"這兩個html屬性用來控制元素左上角的起始位置. -->
+	<!-- 15. <text>標籤對內文本的大小可以使用css來控制. 另外, "fill""stroke""stroke-width"這幾個屬性即是html屬性, 也是css樣式屬性, 亦即可以在<style>標籤對中使用. -->
+</svg>
+<ul id="ulist">
+</ul>
+</body>
+</html>

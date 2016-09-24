@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>D3學習筆記</title>
+<style type="text/css">
+svg
+{
+	border: 1px dotted grey;
+	width: 400px;
+	height: 400px;
+	background-color: wheat;
+}
+</style>
+<script type="text/javascript" src="d3/d3.js"></script>
+<script>
+window.addEventListener('load', function (){
+	var aSvgSelect = d3.selectAll('svg');
+	/* 3. "attr()方法貌似只對<svg>下級元素好使, 或者說attr()是專門用來設置<svg>形狀標籤屬性的."此結論錯誤.
+	attr()方法可以設置任何d3.select()方法選中的對象的屬性, 但attr()方法的優先級低於css樣式設置.
+	var oSvgSelect3 = d3.select('#svg3');
+	
+	在"<style>
+	svg
+	{
+		width: 400px;
+		height: 400px;
+	}</style>"的前提下:
+	aSvgSelect.attr('width', 200)
+		.attr('height', '200px'); //沒反應
+	oSvgSelect3.attr('width', 200)
+		.attr('height', '200px'); //沒反應
+	oSvgSelect3.append('circle').attr('r', 80).attr('fill', 'blue'); //有反應.
+	var circleOfSelect3 = oSvgSelect3.append('circle');
+	circleOfSelect3.attr('r', 90).attr('fill', 'red'); //有反應.
+	var circleOfSelect2 = d3.select('#circle2');
+	circleOfSelect2.attr('r', 200).attr('fill', 'black'); //有反應.
+	*/
+	/* 4. "換句話說就是<svg>標籤本身的屬性無法通過d3來控制."這個結論錯誤.
+		<svg>標籤本身的屬性可以通過d3來控制, 前提d3控制與css控制不發生衝突.
+	 */
+	
+	var aT = aSvgSelect.append('rect')
+		.attr('width', '100px')
+		.attr('height', 40)
+		.attr('fill', 'red');
+	/* 2. attr()方法, 第二個輸入參數用來確定屬性值. 可以是一個number, 可以是字符串, 也可以是一個模板函數. */
+	/* 5. append()方法和attr()方法與forEach()方法類似, 有對多個單位元素分別進行加工的功能.
+	var aRect = d3.selectAll('rect')
+		.attr('width', '100px')
+		.attr('height', function (f, s){
+			return (s+1)*20+'px';
+		})
+		.attr('fill', 'purple');
+	*/
+	/*  */
+	
+	var aRect = d3.selectAll('rect')
+		.attr('width', '100px')
+		.attr('height', function (f, s){
+			return (s+1)*20+'px';
+		})
+		.attr('fill', 'purple');
+	
+	
+}, null);
+</script>
+</head>
+<body>
+<svg id="svg1"></svg>
+<svg id="svg2">
+	<circle id="circle2"/>
+</svg>
+<svg id="svg3"></svg>
+<!-- 1. <svg>標籤類似於具有"inline-block"特征的<img>標籤, 支持寬高, 不會獨佔一行. -->
+</body>
+</html>
