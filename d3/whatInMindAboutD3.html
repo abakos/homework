@@ -6,32 +6,157 @@
 <!-- 關於d3, 你腦子裏面都有哪些念頭? -->
 <style>
 /* <svg>標籤下的圖形子標籤的屬性可以通過css來控制. */
-#embeddedinbody
+#svgembeddedinbody
 {
-	background-color: grey;
+	width: 1000px;
+	height: 1000px;
+	/* "opacity: 0.1;" <svg>標籤支持透明度屬性. */
+}
+/* 如果使用css來控制<svg>圖形標籤的屬性的話, 則屬性值必須以單位結尾, 例如"px". 如果css */
+#circleinembeddedinbody
+{
+	cx: 100px;
+	cy: 100px;
+	r: 90px;
+	stroke-width: 20px;
+	/* 關於stroke-width的重要秘密. "stroke-width"類似於圓的直徑的概念, 真正的邊界的寬度應該是"stroke-width"值除以2. */
+	stroke: purple;
+	/* <svg>圖形標籤有默認的填充顏色, 為黑色. */
+	/* <svg>圖形標籤有默認的邊線顏色, 為"none".
+		由於<line>標籤只有"stroke"屬性而無"fill"屬性, 因此畫線段的時候一般要指定"stroke"屬性值, 否則線段可能會顯示不出來.
+	*/
+	/* 與<line>線段不同, <path>路徑既有"stroke"屬性, 又有"fill"屬性. 由於"stroke"屬性默認值為"none", "fill"屬性默認值為"black",
+		因此如果對<path>的"stroke"和"fill"屬性不加設置的話, 顯示出來的效果可能不是路徑而是一個幾何圖形.
+	 */
+	fill: black;
+	opacity: 0.1;
+	/* 透明度"opacity"屬性是可以控制<svg>圖形標籤的透明度的. */
+	/* 兩個有透明度屬性的標籤元素如果重疊, 透明度是可以疊加的. 這個規則是符合直覺的. */
+}
+#rectinembeddedinbody
+{
+	x: 100px;
+	y: 100px;
+	width: 200px;
+	height: 200px;
+	fill: black;
 	opacity: 0.1;
 }
 </style>
+<script type="text/javascript" src="d3/d3.js"></script>
+<!-- 那麼問題來了, 帶"src"屬性的<script>標籤中間無法編寫javascript代碼嗎?
+	或者問, 作為相當於java中"import"語句的"<script src=></script>"語句, 標籤之間是否不允許插入javascript代碼?
+	經驗證貌似是這樣.
+ -->
+<script type="text/javascript">
+/* 那麼問題來了, "d3.scale", 確定線性關係的"linear"或確定序列關係的"ordinal", 是方法還是屬性? 亦即是"d3.scale.linear()"還是"d3.scale.ordinal()"?
+	是方法, 常用的方法有scaleLinear()線性關係, scaleOrdinal()序列關係, scaleLog()對數關係, scaleSqrt()平方關係等.
+ */
+/* 那麼問題來了, "d3.scaleSqrt()"平方關係, 定義域domain()和值域range()是如何對應起來的?
+	scaleSqrt(x) = x^(1/2)*k.
+	那麼問題又來了, 如果
+	var scaleSqrtLocal = d3.scaleSqrt()
+	.domain([1, 10])
+	.range([1, 100]);
+	定義域又是以何種規則映射到值域上的?
+*/
+/* 那麼問題來了, 怎樣查看"d3"這個對象下轄的屬性和方法?
+	使用增強的for循環.
+	for (var key in d3)
+	{
+		console.log(key);
+		console.log(d3[key]);
+	}
+*/
+
+/* d3v4.0版本的重要變化, 撤銷"d3.scale"屬性, "d3.scale.linear()""d3.scale.ordinal()""d3.scale.log()""d3.scale.sqrt()"分別由
+ * "d3.scaleLinear()""d3.scaleOrdinal()""d3.scaleLog()""d3.scaleSqrt()"所替代.
+ */
+/*
+var  = d3.scale.linear()
+	.domain([1, 10])
+	.range([1, 100]);
+//這句會在d3v4.0版本下會報錯, 會報告找不到"d3.scale"為"undefined".
+*/
+
+var scaleSqrtLocal = d3.scaleSqrt()
+	.domain([1, 100])
+	.range([1, 10]);
+/* 那麼問題來了, "d3.scale+()"對應的值域方法, 到底是"range()"還是"rangePoint()"還是"rangePoints()"? 已查明, 是"rangePoints()"不是"rangePoint()".
+	scaleLinear()線性關係對應的值域方法, 是"range()", 其中range()方法的輸入參數為連續特性.
+	scaleOrdinal()序列關係對應的值域方法, 是"range()", 其中range()方法的輸入參數為離散特性, 或"rangePoints()"或.
+ */
+/* 那麼問題來了, "d3.scaleSqrt()"對應的值域方法是什麼?
+	"d3.scaleSqrt()""d3.scaleLog()", 對應的值域方法都是range().
+*/
+console.log(scaleSqrtLocal(81));
+
+window.addEventListener('load', function (){
+	var oSvg = d3.select('#divcontrolledbyscript').append('svg');
+	/* 關於"d3"對象下轄的select()方法的兩個要點.
+		select()方法的輸入參數的格式與css選擇器選擇元素的格式一致, 如果是元素名稱, 則直接寫元素名稱, 例如select('div'). 如果是元素id, 則要以"#"開頭, 例如select('#divcontrolledbyscript').
+		第2個要點是使用d3代碼操作html元素, 要在窗口載入之後, 例如代碼要放在"window.onload""window.addEventListener('load', function, null)"之中.
+	*/
+	/*
+	for (var key in oSvg)
+	{
+		console.log(key);
+		console.log(oSvg[key]);
+	}
+	*/
+	
+	oSvg.attr('width', 1000)
+		.attr('height', '1000')
+		.style('background-color', 'pink');
+	/* 那麼問題來了, <svg>標籤的寬高屬性"width""height", 其實應該是"outerWidth"和"outerHeight"吧?
+	 * 
+	 */
+	/* 那麼問題來了, attr()方法的第2個輸入參數, 可以是number類型嗎? 如果是字符串型, 則如果表示像素的話, 要以單位(例如"px")結尾嗎? */
+	/* 那麼問題來了, <svg>標籤沒有"background-color"屬性嗎?
+		<svg>標籤有"background-color"屬性, 但"background-color"屬性是css樣式屬性, 而非html元素屬性.
+		"background-color"屬性非html元素屬性, 也就是說如果把"background-color"屬性寫在行間, <svg background-color="pink"></svg>, 瀏覽器無法識別寫在行間的"background-color".
+		有些屬性, 例如寬高"width""height", 既是html元素屬性, 也是css樣式屬性. 而有些屬性, 例如"background", 僅是css樣式屬性而非html元素屬性.
+		d3下轄的attr()方法, 只負責設置html元素屬性, 如果要設置元素的css樣式屬性, 則需要使用d3下轄的style()方法.
+	*/
+}, null);
+</script>
 </head>
 <body>
 <h1>svg embedded in body</h1>
-<svg id="embeddedinbody">
-	<!-- <svg>標籤有默認的"width""height"屬性值, <svg>標籤的"width"默認值為"300px", <svg>標籤的"height"默認值為"150px". -->
-	<!-- d3可以操作<svg>標籤 -->
-	<!-- <svg>標籤的四個基本圖形, 圓形<circle>, 矩形<rect>, 線條<line>, 路徑<path>. -->
-	<!-- <svg>的圖形子標籤, 既可以寫成單標籤的形式, 也可以寫成標籤對的形式. -->
-	<!-- <svg>的圖形子標籤共有的屬性, 邊線顏色"stroke", 邊線寬度"stroke-width", 填充"fill". -->
-	<circle>
-		<!-- <circle>標籤的特有屬性, 在哪裏, 圓心橫縱坐標的屬性"cx""cy", 半徑長度"r". -->
-	</circle>
-	<!-- <svg>圖形子標籤的特有屬性可以分為兩個方面. 一是圖形在哪裏, 二是圖形大小. -->
-	<rect>
-		<!-- <rect>標籤的特有屬性, 確定矩形在哪裏的, 矩形左上角坐標屬性"x""y", 單位為像素. 確定矩形大小的, 寬高屬性"width""height". -->
-	</rect>
-	<line>
-		<!-- 那麼問題來了, 確定<line>標籤 -->
-	</line>
-	<!-- 將數據轉化成圖形的渲染過程, 英文叫"render" -->
-</svg>
+<div id="divcontrolledbyscript">
+</div>
+<div id="divembeddedinbody">
+	<svg id="svgembeddedinbody">
+		<!-- <svg>標籤有默認的"width""height"屬性值, <svg>標籤的"width"默認值為"300px", <svg>標籤的"height"默認值為"150px". -->
+		<!-- d3可以操作<svg>標籤 -->
+		<!-- <svg>標籤的四個基本圖形, 圓形<circle>, 矩形<rect>, 線條<line>, 路徑<path>. -->
+		<!-- 除了圖形標籤, <svg>還有文本標籤<text> -->
+		<!-- <svg>的圖形子標籤, 既可以寫成單標籤的形式, 也可以寫成標籤對的形式. -->
+		<!-- <svg>的圖形子標籤共有的屬性, 邊線顏色"stroke", 邊線寬度"stroke-width", 填充"fill". -->
+		<circle id="circleinembeddedinbody">
+			<!-- <circle>標籤的特有屬性, 在哪裏, 圓心橫縱坐標的屬性"cx""cy", 半徑長度"r". -->
+			<!-- 那麼問題來了, <circle>標籤的半徑長度"r", 以及<rect>標籤的寬高"width""height", 是否把邊線"stroke-width"的值也計算在內?
+				 根據盒子模型來猜測, 應該是不包含.
+			 -->
+		</circle>
+		<!-- <svg>圖形子標籤的特有屬性可以分為兩個方面. 一是圖形在哪裏, 二是圖形大小. -->
+		<rect id="rectinembeddedinbody">
+			<!-- <rect>標籤的特有屬性, 確定矩形在哪裏的, 矩形左上角坐標屬性"x""y", 單位為像素. 確定矩形大小的, 寬高屬性"width""height". -->
+		</rect>
+		<line x1="200" y1="200" x2="400" y2="400" stroke="black" stroke-width="5">
+			<!-- 那麼問題來了, 確定<line>標籤在哪裏以及怎麼畫?
+				  <line>是線段的意思, 線段的位置和走向由起點坐標和終點坐標確定.
+				  <line>標籤的"x1""y1"屬性控制起點坐標的位置, "x2""y2"屬性控制終點坐標的位置.
+				  由於<line>是線段, 並且只是數學意義上的一條線段, 因此<line>標籤只有"x1""y1""x2""y2"屬性, 而無"x3""y3"等屬性.
+			 -->
+		</line>
+		<path d="M200 200 L400 400 L600 0" fill="none" stroke="blue">
+			<!-- <path>標籤, 有如下格式"M起始點的橫坐標 起始點的縱坐標 L中間點的橫坐標 中間點的縱坐標 L中間點的橫坐標 中間點的縱坐標[Z]". -->
+			<!-- 那麼問題來了, "M起始點的橫坐標 起始點的縱坐標 L中間點的橫坐標 中間點的縱坐標 L中間點的橫坐標 中間點的縱坐標[Z]"這個 -->
+			<!-- <path>標籤, 屬性值裡面的"Z"表示封口, 是可選項. -->
+		</path>
+		<!-- 將數據轉化成圖形的渲染過程, 英文叫"render" -->
+	</svg>
+</div>
 </body>
 </html>
