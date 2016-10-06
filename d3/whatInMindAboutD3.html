@@ -89,7 +89,7 @@ var scaleSqrtLocal = d3.scaleSqrt()
 /* 那麼問題來了, "d3.scaleSqrt()"對應的值域方法是什麼?
 	"d3.scaleSqrt()""d3.scaleLog()", 對應的值域方法都是range().
 */
-console.log(scaleSqrtLocal(81));
+/* console.log(scaleSqrtLocal(81));//結果為9. */
 
 window.addEventListener('load', function (){
 	var oSvg = d3.select('#divcontrolledbyscript').append('svg');
@@ -105,18 +105,269 @@ window.addEventListener('load', function (){
 	}
 	*/
 	
-	oSvg.attr('width', 1000)
-		.attr('height', '1000')
-		.style('background-color', 'pink');
+	var outerWidth = 1000;
+	var outerHeight = 1000;
+	var margin = {left: 100, top: 100, right: 100, bottom: 100};
+	var innerWidth = outerWidth - margin.left - margin.right;
+	var innerHeight = outerHeight - margin.top - margin.bottom;
+	
+	oSvg.attr('width', outerWidth)
+		.attr('height', outerHeight)
+		.style('background-color', 'black');
+	
+	var g = oSvg.append('g');
+	g.attr('transform', 'translate('+margin.left+', '+margin.top+')');
+	/*
+	var oRect = g.append('rect');
+	oRect.attr('x', '0')
+		.attr('y', '0')
+		.attr('width', innerWidth)
+		.attr('height', innerHeight)
+		.attr('fill', 'purple');
+	*/
 	/* 那麼問題來了, <svg>標籤的寬高屬性"width""height", 其實應該是"outerWidth"和"outerHeight"吧?
 	 * 
 	 */
-	/* 那麼問題來了, attr()方法的第2個輸入參數, 可以是number類型嗎? 如果是字符串型, 則如果表示像素的話, 要以單位(例如"px")結尾嗎? */
+	/* 那麼問題來了, attr()方法的第2個輸入參數, 可以是number類型嗎? 如果是字符串型, 則如果表示數值大小的話, 要以單位(例如"px")結尾嗎?
+		經驗證, 可以是number類型. 如果是字符串類型表示數值大小, 可以不以單位結尾.
+	*/
 	/* 那麼問題來了, <svg>標籤沒有"background-color"屬性嗎?
 		<svg>標籤有"background-color"屬性, 但"background-color"屬性是css樣式屬性, 而非html元素屬性.
 		"background-color"屬性非html元素屬性, 也就是說如果把"background-color"屬性寫在行間, <svg background-color="pink"></svg>, 瀏覽器無法識別寫在行間的"background-color".
 		有些屬性, 例如寬高"width""height", 既是html元素屬性, 也是css樣式屬性. 而有些屬性, 例如"background", 僅是css樣式屬性而非html元素屬性.
 		d3下轄的attr()方法, 只負責設置html元素屬性, 如果要設置元素的css樣式屬性, 則需要使用d3下轄的style()方法.
+	*/
+	
+	/* d3對於<svg>標籤規劃的慣例, <svg>標籤本身的寬高屬性"width""height", 按慣例算作"outerWidth""outerHeight".
+		"outer"和"inner"之間有邊距"margin". 按慣例, 邊距"margin"往往被做成一個object對象,
+		"var margin = {left: number數值, top: number數值, right: number數值, bottom: number數值};"
+		innerWidth = outerWidth - margin.left - margin.right;
+		innerHeight = outerHeight - margin.top - margin.bottom;
+		那麼問題來了, <svg>內部margin的標準寫法是怎樣的? 對象名為"margin", 該對象下轄4個屬性, "left""top""right""bottom".
+	*/
+	/* d3的外邊距慣例的"margin.top""margin.left", 一般通過<g>標籤的"translate()"屬性方法來實現. <g transform="translate(margin.left, margin.top)"> */
+	/* 那麼問題來了, d3對象下轄的csv()方法, 第一個輸入參數支持相對路徑嗎? 經驗證, 支持. */
+	/* forEach()方法的調用主體是數組對象, forEach()方法的輸入參數是匿名函數. */
+	function type(d)
+	{
+		for (var key in d)
+		{
+			if (!isNaN(d[key]))
+			{
+				d[key] = parseFloat(d[key]);
+			}
+		}
+		
+		return d;
+		/* 最後要有個"return d;"的過程. 元素處理方法最後要把輸入的被處理元素給返回. */
+	}
+	
+	/* 那麼問題來了, javascript中, 函數定義時的函數名, 是否同時又是該函數的引用? */
+	var xScale = d3.scaleLinear()
+		.range([0, innerWidth]);
+	var yScale = d3.scaleLinear();
+	/* 需要注意的是, domain()和range()方法的輸入參數都是一個形似閉區間的數組. */
+	/* 關於d3下轄extent()方法, 調用extent()方法, 得到的效果相當於"[d3.min(aData, ), d3.max(aData, )]"的效果.
+		例如"d3.scaleLinear().domain(d3.extent(aData, function(d){ return d[column]; }));"等價於
+		"d3.scaleLinear().domain([d3.min(aData, function(d){ return d[column]; }), d3.max(aData, function(d){ return d[column]; })]);".
+	*/
+	/* 如果發現"d3.extent(aData, function(d){ return d[column]; } )"沒有出現預期的數值, 可能是aData裏面的數據未進行類型轉換. */
+	var rScale = d3.scaleSqrt();
+	var perpixel = 100000;
+	
+	/* 那麼問題來了, javascript中, 如果屬性名"attribute"符合變量名的命名規範, 則"element['attribute']"是否完全等價於"element.attribute"的寫法? */
+	d3.csv("datasource/geonames/cities100000.csv", type, function (aData){
+		/*aData.forEach(function (d)
+			{
+			console.log('d.name = '+d['name']);
+			});*/
+			
+		xScale.domain(d3.extent(aData, function(d){ return d['longitude']; }));
+		yScale.domain(d3.extent(aData, function(d){ return d['latitude']; }));
+			var xScaleExtension = d3.max(aData, function(d){ return d.longitude; }) - d3.min(aData, function(d){ return d['longitude']; });
+			var yScaleExtension = d3.max(aData, function(d){ return d['latitude']; }) - d3.min(aData, function(d){ return d['latitude']; });
+			/* 通過"(innerWidth*yScaleExtension)/xScaleExtension"來保證比例正確. */
+		yScale.range([(innerWidth*yScaleExtension)/xScaleExtension, 0]);
+		/* d3的domain(), range()方法 */
+		var rMax = Math.sqrt(d3.max(aData, function(d){ return d.population/(perpixel*Math.PI);}));
+		rScale.domain([0, d3.max(aData, function(d){ return d.population; })])
+			.range([0, rMax]);
+		
+		var aCircle = g.selectAll('circle').data(aData);
+		aCircle = aCircle.enter().append('circle');
+		aCircle.attr('cx', function(d, sndPara, trdPara, frtPara){
+			/*
+			console.log('attr(function(sndPara)) = '+sndPara);
+			console.log('attr(function(trdPara)) = '+trdPara);
+			console.log('attr(function(frtPara)) = '+frtPara);
+			經驗證, attr()方法的第二個輸入參數如果是個匿名函數的話, 則該匿名函數符合元素處理函數的特征.
+			*/
+			return xScale(d['longitude']);
+			})
+			.attr('cy', function(d){ return yScale(d['latitude']); })
+			.attr('r', function(d){ return rScale(d.population); })
+			.attr('fill', 'white')
+			.style('opacity', 0.2);
+		aCircle.exit().remove();
+	});
+	/*
+		關於"d3.csv()"方法的相關研究.
+	*/
+	/*
+	d3.csv("datasource/geonames/cities10000000.csv", function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法只有兩個輸入參數時fstFun的fstPara = '+fstPara);
+		console.log('csv()方法只有兩個輸入參數時fstFun的sndPara = '+sndPara);
+		console.log('csv()方法只有兩個輸入參數時fstFun的trdPara = '+trdPara);
+		console.log('csv()方法只有兩個輸入參數時fstFun的frtPara = '+frtPara);
+		console.log('csv()方法只有兩個輸入參數時fstFun的fftPara = '+fftPara);
+	});
+	d3.csv("datasource/geonames/cities10000000.csv", function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法有三個輸入參數時fstFun的fstPara = '+fstPara);
+		console.log('csv()方法有三個輸入參數時fstFun的sndPara = '+sndPara);
+		console.log('csv()方法有三個輸入參數時fstFun的trdPara = '+trdPara);
+		console.log('csv()方法有三個輸入參數時fstFun的frtPara = '+frtPara);
+		console.log('csv()方法有三個輸入參數時fstFun的fftPara = '+fftPara);
+	}, function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法有三個輸入參數時sndFun的fstPara = '+fstPara);
+		console.log('csv()方法有三個輸入參數時sndFun的sndPara = '+sndPara);
+		console.log('csv()方法有三個輸入參數時sndFun的trdPara = '+trdPara);
+		console.log('csv()方法有三個輸入參數時sndFun的frtPara = '+frtPara);
+		console.log('csv()方法有三個輸入參數時sndFun的fftPara = '+fftPara);
+	});
+	d3.csv("datasource/geonames/cities10000000.csv", function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法有四個輸入參數時fstFun的fstPara = '+fstPara);
+		console.log('csv()方法有四個輸入參數時fstFun的sndPara = '+sndPara);
+		console.log('csv()方法有四個輸入參數時fstFun的trdPara = '+trdPara);
+		console.log('csv()方法有四個輸入參數時fstFun的frtPara = '+frtPara);
+		console.log('csv()方法有四個輸入參數時fstFun的fftPara = '+fftPara);
+	}, function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法有四個輸入參數時sndFun的fstPara = '+fstPara);
+		console.log('csv()方法有四個輸入參數時sndFun的sndPara = '+sndPara);
+		console.log('csv()方法有四個輸入參數時sndFun的trdPara = '+trdPara);
+		console.log('csv()方法有四個輸入參數時sndFun的frtPara = '+frtPara);
+		console.log('csv()方法有四個輸入參數時sndFun的fftPara = '+fftPara);
+	}, function(fstPara, sndPara, trdPara, frtPara, fftPara){
+		console.log('csv()方法有四個輸入參數時trdFun的fstPara = '+fstPara);
+		console.log('csv()方法有四個輸入參數時trdFun的sndPara = '+sndPara);
+		console.log('csv()方法有四個輸入參數時trdFun的trdPara = '+trdPara);
+		console.log('csv()方法有四個輸入參數時trdFun的frtPara = '+frtPara);
+		console.log('csv()方法有四個輸入參數時trdFun的fftPara = '+fftPara);
+	});
+	[Log] csv()方法只有兩個輸入參數時fstFun的fstPara = null (whatInMindAboutD3.html, line 177)
+	[Log] csv()方法只有兩個輸入參數時fstFun的sndPara = [object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object] (whatInMindAboutD3.html, line 178)
+	[Log] csv()方法只有兩個輸入參數時fstFun的trdPara = undefined (whatInMindAboutD3.html, line 179)
+	[Log] csv()方法只有兩個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 180)
+	[Log] csv()方法只有兩個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 181)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 0 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 1 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 2 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 3 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 4 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 5 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 6 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 7 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 8 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 184)
+	[Log] csv()方法有三個輸入參數時fstFun的sndPara = 9 (whatInMindAboutD3.html, line 185)
+	[Log] csv()方法有三個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 186)
+	[Log] csv()方法有三個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 187)
+	[Log] csv()方法有三個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 188)
+	[Log] csv()方法有三個輸入參數時sndFun的fstPara = null (whatInMindAboutD3.html, line 190)
+	[Log] csv()方法有三個輸入參數時sndFun的sndPara =  (whatInMindAboutD3.html, line 191)
+	[Log] csv()方法有三個輸入參數時sndFun的trdPara = undefined (whatInMindAboutD3.html, line 192)
+	[Log] csv()方法有三個輸入參數時sndFun的frtPara = undefined (whatInMindAboutD3.html, line 193)
+	[Log] csv()方法有三個輸入參數時sndFun的fftPara = undefined (whatInMindAboutD3.html, line 194)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 0 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 1 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 2 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 3 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 4 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 5 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 6 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 7 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 8 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時fstFun的fstPara = [object Object] (whatInMindAboutD3.html, line 197)
+	[Log] csv()方法有四個輸入參數時fstFun的sndPara = 9 (whatInMindAboutD3.html, line 198)
+	[Log] csv()方法有四個輸入參數時fstFun的trdPara = name,latitude,longitude,population (whatInMindAboutD3.html, line 199)
+	[Log] csv()方法有四個輸入參數時fstFun的frtPara = undefined (whatInMindAboutD3.html, line 200)
+	[Log] csv()方法有四個輸入參數時fstFun的fftPara = undefined (whatInMindAboutD3.html, line 201)
+	[Log] csv()方法有四個輸入參數時sndFun的fstPara = null (whatInMindAboutD3.html, line 203)
+	[Log] csv()方法有四個輸入參數時sndFun的sndPara =  (whatInMindAboutD3.html, line 204)
+	[Log] csv()方法有四個輸入參數時sndFun的trdPara = undefined (whatInMindAboutD3.html, line 205)
+	[Log] csv()方法有四個輸入參數時sndFun的frtPara = undefined (whatInMindAboutD3.html, line 206)
+	[Log] csv()方法有四個輸入參數時sndFun的fftPara = undefined (whatInMindAboutD3.html, line 207)
 	*/
 }, null);
 </script>
@@ -156,6 +407,8 @@ window.addEventListener('load', function (){
 			<!-- <path>標籤, 屬性值裡面的"Z"表示封口, 是可選項. -->
 		</path>
 		<!-- 將數據轉化成圖形的渲染過程, 英文叫"render" -->
+		<!-- <svg>還有一個重要的下屬標籤, 表示分組的<g>標籤. "g"為"group"的簡寫. <g>標籤內有個重要的html元素屬性"transform".
+		"transform", 變換, 變換中有個重要的屬性方法, 平移, 英文為"translate". "translate(x, y)", 表示把屏幕原點O平移到點(x,y)位置. -->
 	</svg>
 </div>
 </body>
